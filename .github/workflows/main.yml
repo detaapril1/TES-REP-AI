@@ -1,0 +1,42 @@
+name: Free RDP with Ngrok
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Download ngrok
+        run: |
+          Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile "ngrok.zip"
+          Expand-Archive ngrok.zip
+          Move-Item ngrok.exe C:\ngrok.exe
+
+      - name: Authenticate ngrok
+        run: C:\ngrok.exe authtoken $env:NGROK_AUTH_TOKEN
+
+      - name: Start ngrok tunnel for RDP
+        run: Start-Process "C:\ngrok.exe" "tcp 3389" -WindowStyle Hidden
+
+      - name: Enable RDP access
+        run: |
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name 'fDenyTSConnections' -Value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+
+      - name: Set RDP username & password
+        run: |
+          net user datapril S04April /add
+          net localgroup administrators datapril /add
+
+      - name: Show login info
+        run: |
+          $ip = Invoke-RestMethod -Uri "http://127.0.0.1:4040/api/tunnels"
+          $public_url = $ip.tunnels[0].public_url
+          $rdp_addr = $public_url -replace "tcp://", ""
+          Write-Output "==============================="
+          Write-Output "RDP Address: $rdp_addr"
+          Write-Output "Username: datapril"
+          Write-Output "Password: 04April"
+          Write-Output "==============================="
