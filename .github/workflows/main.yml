@@ -10,15 +10,15 @@ jobs:
     steps:
     - name: Download ngrok
       run: |
-        Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile "ngrok.zip"
-        Expand-Archive ngrok.zip -DestinationPath ngrok
-        Move-Item .\ngrok\ngrok.exe C:\ngrok.exe
+        Invoke-WebRequest -Uri "https://bin.equinox.io/c/bNyj1mQVY4c/ngrok-stable-windows-amd64.zip" -OutFile "$env:USERPROFILE\ngrok.zip"
+        Expand-Archive "$env:USERPROFILE\ngrok.zip" -DestinationPath "$env:USERPROFILE\ngrok"
+        Move-Item "$env:USERPROFILE\ngrok\ngrok.exe" "$env:USERPROFILE\ngrok.exe"
 
     - name: Authenticate ngrok
-      run: C:\ngrok.exe authtoken 2vcufE6cOap7CgfrAvvviv3i9jr_3CNMvLlqUTUQD9ufB9vDW
+      run: "$env:USERPROFILE\ngrok.exe authtoken 2vcufE6cOap7CgfrAvvviv3i9jr_3CNMvLlqUTUQD9ufB9vDW"
 
     - name: Start ngrok tunnel for RDP
-      run: Start-Process "C:\ngrok.exe" "tcp 3389" -WindowStyle Hidden
+      run: Start-Process "$env:USERPROFILE\ngrok.exe" "tcp 3389" -WindowStyle Hidden
 
     - name: Enable RDP access
       run: |
